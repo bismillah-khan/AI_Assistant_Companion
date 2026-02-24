@@ -1,13 +1,14 @@
+from app.agents.loop import AgentLoop
+from app.core.config.settings import Settings
+from app.llm.client import LLMClient
+from app.llm.schemas import StructuredOutput
+from app.models.chat import ChatRequest
 from app.tools.registry import ToolRegistry
 
 
 class AgentController:
-    def __init__(self, tools: ToolRegistry) -> None:
-        self.tools = tools
+    def __init__(self, tools: ToolRegistry, llm: LLMClient, settings: Settings) -> None:
+        self.loop = AgentLoop(tools, llm, settings)
 
-    async def run(self, message: str, session_id: str | None) -> str:
-        # Placeholder for tool-calling LLM loop
-        tools = ", ".join(self.tools.list_tools())
-        suffix = f" (tools: {tools})" if tools else ""
-        session = session_id or "new"
-        return f"echo:{message} session:{session}{suffix}"
+    async def run(self, request: ChatRequest) -> StructuredOutput:
+        return await self.loop.run(request)
